@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 
-
 //@RestController
 //public class StudentController {
 //
@@ -40,7 +39,6 @@ import java.util.Map;
 //}
 
 
-
 @RestController
 @RequestMapping("/student")
 public class StudentController {
@@ -60,24 +58,26 @@ public class StudentController {
     }
 
 
-   //@GetMapping("/{id}")
-//    public String getStudentName(@PathVariable Integer id) {
-//        String sql = "SELECT name FROM student WHERE id = ?";
-//        try {
-//            return jdbcTemplate.queryForObject(sql, new Object[]{id}, String.class);
-//        } catch (EmptyResultDataAccessException e) {
-//            return "Student not found";
-//        }
-//    }
-
     @GetMapping("/{id}")
     public String getStudentInfo(@PathVariable Integer id) {
-        String sql = "SELECT name FROM studentInfo WHERE id = ?";
-        String studentName = jdbcTemplate.queryForObject(sql, new Object[]{id}, String.class);
-        String subject = restTemplate.getForObject("http://localhost:8081/subject/" + id, String.class);
-        return "Student: " + studentName + ", Subject: " + subject;
+        // Updated SQL query to select name, age, and town
+        String sql = "SELECT name, age, town FROM studentInfo WHERE id = ?";
 
+        // Query for a map containing the results. Each key in the map will correspond to a column name.
+        Map<String, Object> studentInfo = jdbcTemplate.queryForMap(sql, new Object[]{id});
+
+        // Retrieve each attribute from the map
+        String studentName = (String) studentInfo.get("name");
+        Integer age = (Integer) studentInfo.get("age");
+        String town = (String) studentInfo.get("town");
+
+        // Call to another service to get the subject
+        String subject = restTemplate.getForObject("http://localhost:8081/subject/" + id, String.class);
+
+        // Return a string that includes the student's name, age, town, and subject
+        return "Student: " + studentName + ", Age: " + age + ", Town: " + town + ", Subject: " + subject;
     }
+
 
 
 }
